@@ -47,7 +47,7 @@ export function WordSyncPanel({ lineId }: WordSyncPanelProps) {
         <p className="text-sm font-semibold">Sincronização por palavra</p>
         <span className="text-xs font-mono text-neutral-500">{formatTime(time)}</span>
       </div>
-      <p className="text-xs text-neutral-500 truncate">"{line.text}"</p>
+      <p className="text-xs text-neutral-500 truncate">&ldquo;{line.text}&rdquo;</p>
 
       {line.words.length === 0 ? (
         <button className="btn-secondary" onClick={() => generateWordsForLine(line.id)}>
@@ -72,7 +72,7 @@ export function WordSyncPanel({ lineId }: WordSyncPanelProps) {
           {tapMode && (
             <p className="text-xs text-accent-soft">
               Próxima palavra a marcar: <strong>{line.words[tapIndex]?.text ?? '(fim)'}</strong> — pressiona
-              "W" no instante em que ela é cantada.
+              &ldquo;W&rdquo; no instante em que ela é cantada.
             </p>
           )}
           <div className="max-h-56 overflow-y-auto space-y-1">
