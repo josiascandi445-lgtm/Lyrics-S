@@ -83,7 +83,7 @@ export function ExportDialog({ songFile, onClose }: ExportDialogProps) {
 
         {!songFile && (
           <p className="text-sm text-amber-400">
-            Nenhum ficheiro de áudio em memória. Volta a carregar o MP3/M4A no separador "Música" antes de exportar
+            Nenhum ficheiro de áudio em memória. Volta a carregar o MP3/M4A no separador &ldquo;Música&rdquo; antes de exportar
             (isto acontece por exemplo depois de importares um projeto sem media incluído).
           </p>
         )}
