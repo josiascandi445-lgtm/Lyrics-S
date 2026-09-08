@@ -157,7 +157,10 @@ export async function exportProjectToMp4(options: ExportOptions): Promise<Blob> 
 
     onProgress({ stage: 'encoding', percent: 99, message: 'A finalizar…' });
     const outputData = await ffmpeg.readFile('output.mp4');
-    const outputBytes = outputData as Uint8Array;
+    // Copia para um Uint8Array "normal" (backed por ArrayBuffer, não
+    // SharedArrayBuffer/ArrayBufferLike) — necessário para satisfazer o tipo
+    // BlobPart em versões recentes do TypeScript/lib.dom.
+    const outputBytes = new Uint8Array(outputData as Uint8Array);
 
     // limpeza do filesystem virtual do ffmpeg para libertar memória
     for (let i = 0; i < totalFrames; i++) {
