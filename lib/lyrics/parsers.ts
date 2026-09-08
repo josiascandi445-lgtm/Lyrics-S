@@ -105,7 +105,7 @@ function srtTimeToSeconds(raw: string): number {
   const match = raw.match(/^(\d{1,2}):(\d{2}):(\d{2})[,.](\d{1,3})$/);
   if (!match) throw new LyricsParseError(`Timestamp SRT inválido: "${raw}"`);
   const [, h, m, s, ms] = match;
-  return Number(h) * 3600 + Number(m) * 60 + Number(s) + Number(ms.padEnd(3, '0')) / 1000;
+  return Number(h) * 3600 + Number(m) * 60 + Number(s) + Number((ms ?? '0').padEnd(3, '0')) / 1000;
 }
 
 /**
