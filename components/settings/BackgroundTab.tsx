@@ -40,7 +40,7 @@ export function BackgroundTab() {
         </div>
         {!hasCover && (
           <p className="text-xs text-neutral-500 mt-2">
-            Importa uma capa no separador "Música" para usar os modos Capa e Auto.
+            Importa uma capa no separador &ldquo;Música&rdquo; para usar os modos Capa e Auto.
           </p>
         )}
       </section>
