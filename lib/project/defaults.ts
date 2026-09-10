@@ -2,6 +2,7 @@ import { createId } from '@/lib/utils/id';
 import type {
   BackgroundSettings,
   ExportSettings,
+  HeaderSettings,
   LyricsEffectSettings,
   Project,
   VideoSettings,
@@ -60,9 +61,10 @@ export function createDefaultVisualSettings(): VisualSettings {
     transitionDurationMs: 420,
     easing: 'easeOutCubic',
 
-    wordHighlightEnabled: true,
-    wordHighlightColor: '#1ed760',
-    wordHighlightScale: 1.08,
+    karaokeFillEnabled: true,
+    sungColor: '#ffffff',
+    unsungColor: 'rgba(255,255,255,0.38)',
+    karaokeSoftnessFraction: 0.08,
   };
 }
 
@@ -94,6 +96,10 @@ export function createDefaultExportSettings(): ExportSettings {
 
 export function createDefaultEffectSettings(): LyricsEffectSettings {
   return { activeEffectId: 'spotify-inspired' };
+}
+
+export function createDefaultHeaderSettings(): HeaderSettings {
+  return { enabled: true };
 }
 
 export function createDefaultProject(name = 'Novo Projeto'): Project {
@@ -129,5 +135,6 @@ export function createDefaultProject(name = 'Novo Projeto'): Project {
     video: createDefaultVideoSettings(),
     export: createDefaultExportSettings(),
     effect: createDefaultEffectSettings(),
+    header: createDefaultHeaderSettings(),
   };
 }

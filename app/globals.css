@@ -61,4 +61,3 @@ input[type='range'] {
 .btn-icon {
   @apply p-2 rounded-lg text-neutral-400 hover:bg-white/5 hover:text-neutral-100 transition-colors;
 }
-

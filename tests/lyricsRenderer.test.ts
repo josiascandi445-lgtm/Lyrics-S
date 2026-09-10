@@ -43,4 +43,36 @@ describe('computeRenderFrame', () => {
     expect(prevLine.opacity).toBeLessThan(activeLine.opacity);
     expect(prevLine.blurPx).toBeGreaterThanOrEqual(activeLine.blurPx);
   });
+
+  it('fillProgress (karaokê) vai de 0 a 1 ao longo da linha ativa, sem palavras sincronizadas', () => {
+    const start = computeRenderFrame(3.01, lyrics, visual).lines.find((l) => l.line.id === 'b')!;
+    const middle = computeRenderFrame(4.5, lyrics, visual).lines.find((l) => l.line.id === 'b')!;
+    const end = computeRenderFrame(5.99, lyrics, visual).lines.find((l) => l.line.id === 'b')!;
+    expect(start.fillProgress).toBeLessThan(middle.fillProgress);
+    expect(middle.fillProgress).toBeLessThan(end.fillProgress);
+    expect(end.fillProgress).toBeLessThanOrEqual(1);
+  });
+
+  it('fillProgress usa os timings das palavras quando existem', () => {
+    const lyricsWithWords: Lyrics = {
+      lines: [
+        {
+          id: 'w',
+          text: 'ab cd',
+          startTime: 0,
+          endTime: 2,
+          words: [
+            { id: 'w1', text: 'ab', startTime: 0, endTime: 1 },
+            { id: 'w2', text: 'cd', startTime: 1, endTime: 2 },
+          ],
+        },
+      ],
+    };
+    const midFirstWord = computeRenderFrame(0.5, lyricsWithWords, visual).lines[0]!;
+    const startSecondWord = computeRenderFrame(1.0, lyricsWithWords, visual).lines[0]!;
+    // "ab" e "cd" têm o mesmo nº de caracteres, por isso a meio da 1ª palavra
+    // o progresso deve rondar 0.25 (metade de metade do texto total)
+    expect(midFirstWord.fillProgress).toBeCloseTo(0.25, 1);
+    expect(startSecondWord.fillProgress).toBeCloseTo(0.5, 1);
+  });
 });

@@ -1,7 +1,7 @@
 import { findActiveLineIndexAt, computeWordState } from '@/lib/lyrics/utils';
 import { getEasing } from '@/lib/utils/easing';
 import { clamp } from '@/lib/utils/time';
-import type { Lyrics, RenderFrame, RenderedLineState, VisualSettings } from '@/types';
+import type { Lyrics, LyricLine, RenderFrame, RenderedLineState, VisualSettings } from '@/types';
 
 /**
  * LyricsRenderer — camada independente de UI.
@@ -17,6 +17,38 @@ import type { Lyrics, RenderFrame, RenderedLineState, VisualSettings } from '@/t
  * Não deve depender de setTimeout/setInterval, de Date.now(), nem de estado
  * externo — apenas dos três argumentos recebidos.
  */
+/**
+ * Calcula o progresso (0-1) do preenchimento tipo karaoke de uma linha no
+ * instante `t`. Usa os timings das palavras quando existem (mais preciso,
+ * baseado no comprimento de texto já cantado); caso contrário usa o tempo
+ * da própria linha como aproximação (funciona mesmo sem sincronização por
+ * palavra, só menos preciso).
+ */
+function computeLineFillProgress(line: LyricLine, t: number): number {
+  if (t <= line.startTime) return 0;
+  if (t >= line.endTime) return 1;
+
+  if (line.words.length > 0) {
+    const totalChars = line.words.reduce((sum, w) => sum + w.text.length, 0) || 1;
+    let sungChars = 0;
+    for (const w of line.words) {
+      if (t >= w.endTime) {
+        sungChars += w.text.length;
+      } else if (t > w.startTime) {
+        const span = Math.max(w.endTime - w.startTime, 0.0001);
+        sungChars += w.text.length * clamp((t - w.startTime) / span, 0, 1);
+        break;
+      } else {
+        break;
+      }
+    }
+    return clamp(sungChars / totalChars, 0, 1);
+  }
+
+  const span = Math.max(line.endTime - line.startTime, 0.0001);
+  return clamp((t - line.startTime) / span, 0, 1);
+}
+
 export function computeRenderFrame(
   t: number,
   lyrics: Lyrics,
@@ -69,6 +101,7 @@ export function computeRenderFrame(
     const positionY = relativeIndex * visual.lineSpacingPx;
 
     const words = line.words.length > 0 ? line.words.map((w) => computeWordState(w, t)) : [];
+    const fillProgress = computeLineFillProgress(line, t);
 
     renderedLines.push({
       line,
@@ -77,6 +110,7 @@ export function computeRenderFrame(
       opacity,
       scale,
       blurPx,
+      fillProgress,
       words,
     });
   }

@@ -16,6 +16,8 @@ const PRESET_LABELS: Record<VisualSettings['preset'], string> = {
 export function VisualTab() {
   const visual = useProjectStore((s) => s.project.visual);
   const setVisual = useProjectStore((s) => s.setVisual);
+  const header = useProjectStore((s) => s.project.header);
+  const setHeader = useProjectStore((s) => s.setHeader);
 
   function applyPreset(preset: VisualSettings['preset']) {
     setVisual({ preset, ...FONT_PRESETS[preset] });
@@ -94,21 +96,47 @@ export function VisualTab() {
       </section>
 
       <section className="space-y-3">
-        <h3 className="text-sm font-semibold">Palavra atual</h3>
+        <h3 className="text-sm font-semibold">Preenchimento tipo karaokê</h3>
+        <p className="text-xs text-neutral-500">
+          A parte já cantada da linha ativa fica sólida; a parte ainda não cantada fica translúcida, com uma
+          transição suave a acompanhar a música (funciona mesmo sem sincronização por palavra — usa o tempo da
+          linha como aproximação nesse caso).
+        </p>
         <label className="flex items-center gap-2 text-sm text-neutral-300">
           <input
             type="checkbox"
-            checked={visual.wordHighlightEnabled}
-            onChange={(e) => setVisual({ wordHighlightEnabled: e.target.checked })}
+            checked={visual.karaokeFillEnabled}
+            onChange={(e) => setVisual({ karaokeFillEnabled: e.target.checked })}
           />
-          Destacar palavra a ser cantada
+          Ativar preenchimento progressivo
         </label>
-        {visual.wordHighlightEnabled && (
+        {visual.karaokeFillEnabled && (
           <>
-            <ColorField label="Cor de destaque" value={visual.wordHighlightColor} onChange={(v) => setVisual({ wordHighlightColor: v })} />
-            <Row label="Escala do destaque" value={visual.wordHighlightScale} min={1} max={1.3} step={0.01} onChange={(v) => setVisual({ wordHighlightScale: v })} />
+            <div className="grid grid-cols-2 gap-3">
+              <ColorField label="Cor (já cantado)" value={visual.sungColor} onChange={(v) => setVisual({ sungColor: v })} />
+              <ColorField label="Cor (por cantar)" value={visual.unsungColor} onChange={(v) => setVisual({ unsungColor: v })} />
+            </div>
+            <Row
+              label="Suavidade da transição"
+              value={visual.karaokeSoftnessFraction}
+              min={0}
+              max={0.3}
+              step={0.01}
+              onChange={(v) => setVisual({ karaokeSoftnessFraction: v })}
+            />
           </>
         )}
+      </section>
+
+      <section className="space-y-3">
+        <h3 className="text-sm font-semibold">Cabeçalho (capa + título + artista)</h3>
+        <label className="flex items-center gap-2 text-sm text-neutral-300">
+          <input type="checkbox" checked={header.enabled} onChange={(e) => setHeader({ enabled: e.target.checked })} />
+          Mostrar no topo do vídeo
+        </label>
+        <p className="text-xs text-neutral-500">
+          Usa a capa e o título/artista definidos no separador &ldquo;Música&rdquo;.
+        </p>
       </section>
     </div>
   );

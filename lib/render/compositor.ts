@@ -1,5 +1,6 @@
 import { computeRenderFrame } from './lyricsRenderer';
 import { renderBackground } from './backgroundRenderer';
+import { renderHeader } from './headerRenderer';
 import { getEffect } from '@/lib/effects/spotifyInspired';
 import type { Project } from '@/types';
 
@@ -51,4 +52,9 @@ export function renderProjectFrame(
     anchorX: width / 2,
     anchorY: height * 0.5,
   });
+
+  // Cabeçalho (capa + título + artista) desenhado por cima de tudo, sempre
+  // nítido — secção 8 da spec ("esses dados aparecem no vídeo") e o efeito
+  // de referência da Fase 2.
+  renderHeader(ctx, width, project.song, assets.coverImage, project.header);
 }

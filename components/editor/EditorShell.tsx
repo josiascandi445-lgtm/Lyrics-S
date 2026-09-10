@@ -50,6 +50,22 @@ export function EditorShell() {
     }
   }
 
+  function handleAudioError() {
+    const el = audioRef.current;
+    const code = el?.error?.code;
+    // MEDIA_ERR_SRC_NOT_SUPPORTED (4) ou MEDIA_ERR_DECODE (3) — o browser
+    // realmente não conseguiu carregar/descodificar este ficheiro. Esta é a
+    // única forma fiável de detetar um áudio inválido (ver nota em
+    // lib/utils/fileValidation.ts) — não tentamos adivinhar antes disto.
+    if (code === 3 || code === 4) {
+      alert(
+        `Não foi possível reproduzir "${project.song.fileName ?? 'este ficheiro'}". O browser não conseguiu descodificá-lo — confirma que é mesmo um MP3 ou M4A válido (não corrompido e não protegido por DRM).`
+      );
+      setSong({ fileName: null, mimeType: null, fileSize: null, objectUrl: null, duration: null });
+      setSongFile(null);
+    }
+  }
+
   return (
     <div className="h-screen flex flex-col">
       <TopBar
@@ -83,6 +99,7 @@ export function EditorShell() {
           ref={audioRef}
           src={project.song.objectUrl}
           onLoadedMetadata={handleLoadedMetadata}
+          onError={handleAudioError}
           className="hidden"
         />
       )}

@@ -121,12 +121,36 @@ mesmo resultado visual.
 
 ## Sistema de efeitos
 
-`lib/effects/types.ts` define a interface `LyricsEffect`. A Fase 1 implementa
-apenas `SpotifyInspiredLyrics` (`lib/effects/spotifyInspired.ts`), registado
-em `effectRegistry`. Adicionar um novo efeito no futuro (GradientTextEffect,
+`lib/effects/types.ts` define a interface `LyricsEffect`. É implementado
+`SpotifyInspiredLyrics` (`lib/effects/spotifyInspired.ts`), registado em
+`effectRegistry`. Adicionar um novo efeito no futuro (GradientTextEffect,
 BlurEffect, MaskEffect, etc.) significa apenas implementar a interface e
 registá-lo — não requer alterar o `LyricsRenderer` nem o pipeline de
 exportação.
+
+O efeito inclui um **preenchimento progressivo tipo karaokê** na linha ativa
+(`visual.karaokeFillEnabled`): a parte já cantada aparece sólida
+(`visual.sungColor`) e a parte ainda não cantada aparece translúcida
+(`visual.unsungColor`), com uma transição suave (`karaokeSoftnessFraction`)
+entre as duas. É desenhado com um único `fillText` usando um
+`CanvasGradient` horizontal cuja posição (`rendered.fillProgress`, calculado
+em `lyricsRenderer.ts`) é sempre função determinística de `t` — por isso
+funciona identicamente no preview e na exportação. Quando a linha tem
+palavras sincronizadas, o progresso é calculado a partir do comprimento de
+texto já cantado (mais preciso); quando não tem, usa o tempo da própria
+linha como aproximação linear — funciona em ambos os casos, só que com
+precisão diferente.
+
+## Cabeçalho (capa + título + artista)
+
+`lib/render/headerRenderer.ts` desenha a capa (arredondada), o título a
+negrito e o artista por baixo, fixos no canto superior esquerdo do vídeo —
+tal como no vídeo de referência. É desenhado por cima do efeito de letras
+(fica sempre nítido, mesmo com linhas desfocadas por baixo). Controlado por
+`project.header.enabled` (separador "Visual" → "Cabeçalho"); usa sempre a
+capa e os campos título/artista definidos no separador "Música". Não inclui
+os ícones de estrela/menu "..." do exemplo original (são controlos de UI de
+uma app de streaming, não fazem sentido num vídeo exportado).
 
 ## Waveform
 
@@ -199,6 +223,19 @@ isso é necessário antes de exportar).
 | E | Marcar fim da linha selecionada e avançar (modo sync) |
 | W | Tap-sync da próxima palavra (painel de sincronização por palavra) |
 
+## Validação de ficheiros de áudio/imagem
+
+`lib/utils/fileValidation.ts` verifica apenas o **tamanho** do ficheiro —
+não tenta adivinhar o formato pela extensão do nome nem pelo `file.type`
+(mime type). Essa abordagem foi tentada numa versão anterior e causava
+falsos negativos: o `file.type` reportado por telemóveis/apps de origem
+(Google Drive, Ficheiros do iPhone, WhatsApp, etc.) varia muito e por vezes
+vem vazio ou genérico, e ficheiros `.m4a` são às vezes reportados como
+`video/mp4`. A validação real acontece ao carregar o ficheiro no elemento
+`<audio>` — se o browser disparar o evento `error` (formato realmente não
+suportado, ficheiro corrompido ou protegido por DRM), o `EditorShell` mostra
+um aviso claro e remove o ficheiro.
+
 ## O que está simplificado nesta Fase 1 (transparência)
 
 Para entregar uma ferramenta real e funcional dentro do âmbito desta
@@ -212,16 +249,27 @@ que o ideal, sem nunca fingir uma funcionalidade que não existe:
   ainda um retângulo de crop arrastável no preview da imagem.
 - **Renderização de frames na exportação**: corre no thread principal (ver
   limitações acima), não num Web Worker dedicado.
+- **Preenchimento karaokê sem sincronização por palavra**: usa uma
+  aproximação linear baseada no tempo da linha (não no comprimento real de
+  cada palavra). Fica visualmente correto, mas para máxima precisão vale a
+  pena sincronizar as palavras.
 - Não foi possível correr `npm run build` / `npm run test` neste ambiente de
   escrita do código (sem acesso à internet para instalar dependências) —
   ver aviso no topo deste README.
 
 ## Desenvolvimento futuro (Fase 2)
 
-A arquitetura de efeitos (`lib/effects/types.ts`) já está preparada para
-receber novos efeitos (`GradientTextEffect`, `SolidTextEffect`,
+O efeito de preenchimento progressivo (a "aparência parcialmente
+opaca/sólida do texto interagindo com o fundo" mencionada no pedido
+original) **já está implementado** — ver secção "Sistema de efeitos" acima.
+A arquitetura de efeitos (`lib/effects/types.ts`) continua preparada para
+receber novos efeitos adicionais (`GradientTextEffect`, `SolidTextEffect`,
 `TextureTextEffect`, `BlurEffect`, `OverlayEffect`, `MaskEffect`) sem alterar
-o `LyricsRenderer` nem o `compositor`. O efeito da Fase 2 mencionado
-(aparência parcialmente opaca/sólida do texto interagindo com o fundo) pode
-ser implementado como um novo `LyricsEffect` que usa `globalCompositeOperation`
-do Canvas 2D ou uma segunda passada com `OffscreenCanvas` para máscaras.
+o `LyricsRenderer` nem o `compositor`.
+
+Ideias razoáveis para continuar a partir daqui:
+- Drag-and-drop real no editor de letras.
+- Mover a renderização de frames da exportação para um Web Worker dedicado.
+- Crop interativo da capa (arrastar/direcionar a área visível).
+- Ícones opcionais (estrela/menu) no cabeçalho, caso se queira replicar a
+  estética de app de streaming de forma mais literal.

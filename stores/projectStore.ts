@@ -5,6 +5,7 @@ import { sortLinesByStartTime } from '@/lib/lyrics/utils';
 import type {
   BackgroundSettings,
   CoverImage,
+  HeaderSettings,
   LyricLine,
   Project,
   Song,
@@ -59,6 +60,7 @@ interface ProjectStoreState {
   setVisual: (partial: Partial<VisualSettings>) => void;
   setBackground: (partial: Partial<BackgroundSettings>) => void;
   setVideo: (partial: Partial<VideoSettings>) => void;
+  setHeader: (partial: Partial<HeaderSettings>) => void;
 }
 
 function touch(project: Project): Project {
@@ -268,6 +270,9 @@ export const useProjectStore = create<ProjectStoreState>((set, get) => ({
 
   setVideo: (partial) =>
     set((s) => ({ project: touch({ ...s.project, video: { ...s.project.video, ...partial } }) })),
+
+  setHeader: (partial) =>
+    set((s) => ({ project: touch({ ...s.project, header: { ...s.project.header, ...partial } }) })),
 }));
 
 export function getActiveLine(): LyricLine | null {

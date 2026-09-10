@@ -104,9 +104,16 @@ export interface VisualSettings {
   transitionDurationMs: number;
   easing: 'easeOutCubic' | 'easeInOutCubic' | 'easeOutQuint' | 'linear';
 
-  wordHighlightEnabled: boolean;
-  wordHighlightColor: string;
-  wordHighlightScale: number;
+  // Preenchimento progressivo tipo karaoke na linha ativa (secção 44 / Fase 2:
+  // "aparência parcialmente opaca/sólida do texto interagindo com o fundo").
+  // A parte já cantada aparece em `sungColor` (sólida), a parte ainda não
+  // cantada em `unsungColor` (translúcida), com uma transição suave entre
+  // as duas que acompanha o tempo real da música.
+  karaokeFillEnabled: boolean;
+  sungColor: string;
+  unsungColor: string;
+  /** largura da transição suave entre cantado/não-cantado, em fração da linha (0-0.3) */
+  karaokeSoftnessFraction: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -130,6 +137,14 @@ export interface BackgroundSettings {
     zoomSpeed: number; // fração de zoom por segundo, valor pequeno ex 0.003
     panAmountPx: number; // deslocamento máximo em px
   };
+}
+
+// ---------------------------------------------------------------------------
+// Cabeçalho (capa + título + artista, fixo no topo do vídeo)
+// ---------------------------------------------------------------------------
+
+export interface HeaderSettings {
+  enabled: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -192,6 +207,7 @@ export interface Project {
   video: VideoSettings;
   export: ExportSettings;
   effect: LyricsEffectSettings;
+  header: HeaderSettings;
 }
 
 // ---------------------------------------------------------------------------
@@ -215,6 +231,12 @@ export interface RenderedLineState {
   opacity: number;
   scale: number;
   blurPx: number;
+  /**
+   * Progresso 0-1 do preenchimento tipo karaoke (esquerda→direita) desta
+   * linha no instante atual. Só é relevante para a linha ativa; para as
+   * restantes vale sempre 0 ou 1 (já cantada / ainda não chegou).
+   */
+  fillProgress: number;
   words: RenderedWordState[];
 }
 
